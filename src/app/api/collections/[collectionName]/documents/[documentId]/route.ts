@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
 
+// Generate static params for dynamic route (required for static export)
+export async function generateStaticParams() {
+  // Return empty array to indicate this route should be handled at runtime
+  return []
+}
+
 // IONOS ChromaDB API implementation for deleting a specific document
 export async function DELETE(request: Request, { params }: { params: { collectionName: string; documentId: string } }) {
   const url = new URL(request.url)
