@@ -1,6 +1,6 @@
 import React from 'react'
 import { Icon123, IconBlockquote, IconBraces, IconSettings } from '@tabler/icons-react'
-import { Text, List, Container, Tabs, rem, ScrollArea, Stack, Title, Divider } from '@mantine/core'
+import { Text, List, Container, Tabs, rem, ScrollArea, Stack, Title, Divider, Box } from '@mantine/core'
 
 import type { ContextModalProps } from '@mantine/modals'
 import type { Record } from '@/lib/types'
@@ -26,87 +26,89 @@ const RecordDetailModal = ({ context, id, innerProps }: ContextModalProps<{ reco
     : record.document
 
   return (
-    <Tabs defaultValue="Document">
-      <Tabs.List grow>
-        <Tabs.Tab value="Document" leftSection={<IconBlockquote style={iconStyle} />}>
-          Document
-        </Tabs.Tab>
-        <Tabs.Tab value="Properties" leftSection={<IconSettings style={iconStyle} />}>
-          Properties
-        </Tabs.Tab>
-        <Tabs.Tab value="Embedding" leftSection={<Icon123 style={iconStyle} />}>
-          Embedding
-        </Tabs.Tab>
-        <Tabs.Tab value="Metadata" leftSection={<IconBraces style={iconStyle} />}>
-          Metadata
-        </Tabs.Tab>
-      </Tabs.List>
+    <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Tabs defaultValue="Document" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Tabs.List grow>
+          <Tabs.Tab value="Document" leftSection={<IconBlockquote style={iconStyle} />}>
+            Document
+          </Tabs.Tab>
+          <Tabs.Tab value="Properties" leftSection={<IconSettings style={iconStyle} />}>
+            Properties
+          </Tabs.Tab>
+          <Tabs.Tab value="Embedding" leftSection={<Icon123 style={iconStyle} />}>
+            Embedding
+          </Tabs.Tab>
+          <Tabs.Tab value="Metadata" leftSection={<IconBraces style={iconStyle} />}>
+            Metadata
+          </Tabs.Tab>
+        </Tabs.List>
 
-      <Tabs.Panel value="Document">
-        <Container p={'md'}>
-          <ScrollArea h={250}>
-            <Text size={'sm'} style={{ whiteSpace: 'pre-wrap' }}>{decodedContent}</Text>
-          </ScrollArea>
-        </Container>
-      </Tabs.Panel>
+        <Tabs.Panel value="Document" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Container p={'md'} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <ScrollArea style={{ flex: 1 }}>
+              <Text size={'sm'} style={{ whiteSpace: 'pre-wrap' }}>{decodedContent}</Text>
+            </ScrollArea>
+          </Container>
+        </Tabs.Panel>
 
-      <Tabs.Panel value="Properties">
-        <Container p={'md'}>
-          <ScrollArea h={250}>
-            <Stack gap="md">
-              {record.properties?.name && (
-                <div>
-                  <Title order={6} c="dimmed">Name</Title>
-                  <Text size="sm">{record.properties.name}</Text>
-                </div>
-              )}
-              {record.properties?.description && (
-                <div>
-                  <Title order={6} c="dimmed">Description</Title>
-                  <Text size="sm">{record.properties.description}</Text>
-                </div>
-              )}
-              {record.properties?.contentType && (
-                <div>
-                  <Title order={6} c="dimmed">Content Type</Title>
-                  <Text size="sm">{record.properties.contentType}</Text>
-                </div>
-              )}
-              {record.properties?.labels && Object.keys(record.properties.labels).length > 0 && (
-                <div>
-                  <Title order={6} c="dimmed">Labels</Title>
-                  <Stack gap="xs">
-                    {Object.entries(record.properties.labels).map(([key, value]) => (
-                      <Text key={key} size="sm">
-                        <strong>{key}:</strong> {String(value)}
-                      </Text>
-                    ))}
-                  </Stack>
-                </div>
-              )}
-            </Stack>
-          </ScrollArea>
-        </Container>
-      </Tabs.Panel>
+        <Tabs.Panel value="Properties" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Container p={'md'} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <ScrollArea style={{ flex: 1 }}>
+              <Stack gap="md">
+                {record.properties?.name && (
+                  <div>
+                    <Title order={6} c="dimmed">Name</Title>
+                    <Text size="sm">{record.properties.name}</Text>
+                  </div>
+                )}
+                {record.properties?.description && (
+                  <div>
+                    <Title order={6} c="dimmed">Description</Title>
+                    <Text size="sm">{record.properties.description}</Text>
+                  </div>
+                )}
+                {record.properties?.contentType && (
+                  <div>
+                    <Title order={6} c="dimmed">Content Type</Title>
+                    <Text size="sm">{record.properties.contentType}</Text>
+                  </div>
+                )}
+                {record.properties?.labels && Object.keys(record.properties.labels).length > 0 && (
+                  <div>
+                    <Title order={6} c="dimmed">Labels</Title>
+                    <Stack gap="xs">
+                      {Object.entries(record.properties.labels).map(([key, value]) => (
+                        <Text key={key} size="sm">
+                          <strong>{key}:</strong> {String(value)}
+                        </Text>
+                      ))}
+                    </Stack>
+                  </div>
+                )}
+              </Stack>
+            </ScrollArea>
+          </Container>
+        </Tabs.Panel>
 
-      <Tabs.Panel value="Embedding">
-        <Container p={'md'}>
-          <ScrollArea h={250}>
-            <EmbeddingList embedding={record.embedding} />
-          </ScrollArea>
-        </Container>
-      </Tabs.Panel>
+        <Tabs.Panel value="Embedding" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Container p={'md'} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <ScrollArea style={{ flex: 1 }}>
+              <EmbeddingList embedding={record.embedding} />
+            </ScrollArea>
+          </Container>
+        </Tabs.Panel>
 
-      <Tabs.Panel value="Metadata">
-        <Container p={'md'}>
-          <ScrollArea h={250}>
-            <Text size={'sm'} style={{ whiteSpace: 'pre-wrap' }}>
-              {JSON.stringify(record.metadata, null, 2)}
-            </Text>
-          </ScrollArea>
-        </Container>
-      </Tabs.Panel>
-    </Tabs>
+        <Tabs.Panel value="Metadata" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <Container p={'md'} style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <ScrollArea style={{ flex: 1 }}>
+              <Text size={'sm'} style={{ whiteSpace: 'pre-wrap' }}>
+                {JSON.stringify(record.metadata, null, 2)}
+              </Text>
+            </ScrollArea>
+          </Container>
+        </Tabs.Panel>
+      </Tabs>
+    </Box>
   )
 }
 

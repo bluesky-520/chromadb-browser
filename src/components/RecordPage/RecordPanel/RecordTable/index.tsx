@@ -44,7 +44,7 @@ const RecordTable = ({ withQuery, recordsPage, collectionName }: { withQuery: bo
     modals.openContextModal({
       modalId: 'recordDetailModal',
       modal: 'recordDetailModal',
-      size: 'xl',
+      size: '67%',
       title: `ID: ${record.id}`,
       innerProps: { record },
     })
@@ -242,7 +242,9 @@ const RecordTable = ({ withQuery, recordsPage, collectionName }: { withQuery: bo
                       backgroundColor: 'transparent',
                       borderBottom: '1px solid var(--mantine-color-dark-6)',
                       transition: 'background-color 0.2s ease',
+                      cursor: 'pointer',
                     }}
+                    onClick={() => openDetailModal(record)}
                     onMouseEnter={e => {
                       e.currentTarget.style.backgroundColor = 'var(--mantine-color-dark-7)'
                     }}
