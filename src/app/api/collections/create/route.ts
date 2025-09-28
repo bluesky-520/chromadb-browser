@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
 
+// Force runtime execution for dynamic server usage
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // IONOS ChromaDB API implementation for creating collections
 export async function POST(request: Request) {
   const url = new URL(request.url)

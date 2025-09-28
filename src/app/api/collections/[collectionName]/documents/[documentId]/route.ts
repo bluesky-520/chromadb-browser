@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
 
+// Force runtime execution for dynamic server usage
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // Generate static params for dynamic route (required for static export)
 export async function generateStaticParams() {
   // Return empty array to indicate this route should be handled at runtime

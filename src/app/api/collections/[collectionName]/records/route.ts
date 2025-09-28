@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server'
 
+// Force runtime execution for dynamic server usage
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
 // Generate static params for dynamic route (required for static export)
 export async function generateStaticParams() {
   // Return empty array to indicate this route should be handled at runtime
@@ -28,6 +32,7 @@ export async function GET(request: Request, { params }: { params: { collectionNa
       Authorization: `Bearer ${token.substring(0, 20)}...`,
       'Content-Type': 'application/json',
     })
+    
     const response = await fetch(`${connectionString}/collections/${collectionId}/documents`, {
       method: 'GET',
       headers: {
@@ -35,6 +40,9 @@ export async function GET(request: Request, { params }: { params: { collectionNa
         'Content-Type': 'application/json',
       },
     })
+    
+    console.log('IONOS API Response status:', response.status)
+    console.log('IONOS API Response headers:', Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -58,6 +66,8 @@ export async function GET(request: Request, { params }: { params: { collectionNa
     // Always fetch real data from IONOS API
     const data = await response.json()
     console.log('IONOS Documents Response:', data)
+    console.log('IONOS Documents Response type:', typeof data)
+    console.log('IONOS Documents Response keys:', data ? Object.keys(data) : 'null/undefined')
 
     // Transform IONOS documents response to match expected format
     if (data && data.items && Array.isArray(data.items)) {
@@ -92,8 +102,12 @@ export async function GET(request: Request, { params }: { params: { collectionNa
       }))
     } else {
       console.warn('Invalid IONOS documents response format:', data)
+      console.warn('Expected format: { items: [...] } or array of documents')
       records = []
     }
+    
+    console.log('Processed records count:', records.length)
+    console.log('Sample record:', records.length > 0 ? records[0] : 'No records')
 
     return NextResponse.json({
       total: records.length,

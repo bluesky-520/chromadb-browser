@@ -4,6 +4,7 @@ import React from 'react'
 import { useRouter } from 'next/navigation'
 import { IconPlus, IconFolder, IconDatabase, IconRefresh } from '@tabler/icons-react'
 import { modals } from '@mantine/modals'
+import { notifications } from '@mantine/notifications'
 import { Text, Group, Button, ScrollArea, ActionIcon, Badge, Box, Stack, UnstyledButton, rem } from '@mantine/core'
 
 import { useGetConfig, useGetCollections } from '@/lib/client/query'
@@ -17,7 +18,7 @@ interface SidebarProps {
 export default function Sidebar({ currentCollection }: SidebarProps) {
   const router = useRouter()
   const { data: config } = useGetConfig()
-  const { data: collections, isLoading, refetch: refetchCollections } = useGetCollections(config)
+  const { data: collections, isLoading, isFetching, refetch: refetchCollections } = useGetCollections(config)
 
   // Debug: Log collections data (only in development and when data changes)
   React.useEffect(() => {
@@ -46,9 +47,37 @@ export default function Sidebar({ currentCollection }: SidebarProps) {
     router.push(`/collections/${collectionId}`)
   }
 
-  const handleRefreshCollections = () => {
-    refetchCollections()
+  const handleRefreshCollections = async () => {
+    try {
+      await refetchCollections()
+      notifications.show({
+        title: 'Collections Refreshed',
+        message: 'Collections list has been updated successfully',
+        color: 'green',
+        autoClose: 3000,
+      })
+    } catch (error) {
+      notifications.show({
+        title: 'Refresh Failed',
+        message: 'Failed to refresh collections. Please try again.',
+        color: 'red',
+        autoClose: 5000,
+      })
+    }
   }
+
+  // Keyboard shortcut for refresh (F5 or Ctrl+R)
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'F5' || (event.ctrlKey && event.key === 'r')) {
+        event.preventDefault()
+        handleRefreshCollections()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleRefreshCollections])
 
 
   return (
@@ -78,7 +107,14 @@ export default function Sidebar({ currentCollection }: SidebarProps) {
             Collections
           </Text>
           <Group gap="xs">
-            <ActionIcon variant="subtle" size="sm" onClick={handleRefreshCollections} title="Refresh Collections">
+            <ActionIcon 
+              variant="subtle" 
+              size="sm" 
+              onClick={handleRefreshCollections} 
+              title="Refresh Collections (F5 or Ctrl+R)"
+              loading={isFetching}
+              disabled={isFetching}
+            >
               <IconRefresh size={16} />
             </ActionIcon>
             <ActionIcon variant="subtle" size="sm" onClick={handleAddCollection} title="Add Collection">
@@ -92,6 +128,10 @@ export default function Sidebar({ currentCollection }: SidebarProps) {
             {isLoading ? (
               <Text size="sm" c="dimmed">
                 Loading collections...
+              </Text>
+            ) : isFetching ? (
+              <Text size="sm" c="dimmed">
+                Refreshing collections...
               </Text>
             ) : collections && collections.length > 0 ? (
               collections.map(collection => (
