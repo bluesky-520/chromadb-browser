@@ -8,8 +8,6 @@ const nextConfig = {
   output: 'standalone',
   // Configure for production deployment
   trailingSlash: false,
-  // Disable static optimization for dynamic routes
-  generateStaticParams: false,
   // Ensure proper asset loading
   assetPrefix: '',
   basePath: '',
