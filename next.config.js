@@ -6,17 +6,20 @@ const nextConfig = {
   },
   // Production configuration for deployment
   output: 'standalone',
-  // Ensure proper asset loading in production
-  assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
   // Configure for production deployment
   trailingSlash: false,
+  // Disable static optimization for dynamic routes
+  generateStaticParams: false,
+  // Ensure proper asset loading
+  assetPrefix: '',
+  basePath: '',
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
     config.module.rules.push({
       test: /\.node$/,
       use: 'node-loader',
     })
 
-    // Ensure proper chunk loading in production
+    // Fix chunk loading issues in production
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: 'all',
@@ -34,6 +37,10 @@ const nextConfig = {
           },
         },
       }
+      
+      // Ensure proper chunk loading
+      config.output.chunkLoadingGlobal = 'webpackChunkchromadb-admin'
+      config.output.globalObject = 'self'
     }
 
     return config

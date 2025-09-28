@@ -1,141 +1,130 @@
 # ChromaDB Browser - AWS EC2 Deployment Guide
 
-## Prerequisites
+## Quick Fix for Current Issues
 
-- AWS EC2 instance with Ubuntu 20.04+ or Amazon Linux 2
-- Docker installed (if using Docker deployment)
-- Node.js 20+ (if using direct deployment)
-- Git installed
+The JavaScript chunk loading errors you're experiencing are caused by incorrect Next.js configuration for production deployment. Here's how to fix them:
 
-## Deployment Options
+### 1. Rebuild and Redeploy
 
-### Option 1: Docker Deployment (Recommended)
+After the configuration changes, you need to rebuild and redeploy:
 
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repo-url>
-   cd chromadb-browser
-   ```
+```bash
+# Stop the current application
+sudo pkill -f "next start"
 
-2. **Build the Docker image:**
-   ```bash
-   docker build -t chromadb-browser .
-   ```
+# Remove old build files
+rm -rf .next
+rm -rf node_modules
 
-3. **Run the container:**
-   ```bash
-   docker run -d \
-     --name chromadb-browser \
-     -p 3001:3001 \
-     -e NODE_ENV=production \
-     -e CHROMA_SERVER_HOST=your-chromadb-host \
-     -e CHROMA_SERVER_HTTP_PORT=8000 \
-     chromadb-browser
-   ```
+# Install dependencies
+npm ci
 
-### Option 2: Direct Node.js Deployment
+# Build the application
+npm run build
 
-1. **Install Node.js 20+:**
-   ```bash
-   # Ubuntu/Debian
-   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-   sudo apt-get install -y nodejs
+# Start the application
+npm run start:prod
+```
 
-   # Amazon Linux 2
-   curl -fsSL https://rpm.nodesource.com/setup_20.x | sudo bash -
-   sudo yum install -y nodejs
-   ```
+### 2. Docker Deployment (Recommended)
 
-2. **Clone and setup:**
-   ```bash
-   git clone <your-repo-url>
-   cd chromadb-browser
-   npm ci --only=production
-   ```
+```bash
+# Build the Docker image
+docker build -t chromadb-browser .
 
-3. **Build and start:**
-   ```bash
-   npm run build
-   npm run start:prod
-   ```
+# Run the container
+docker run -d -p 3001:3001 --name chromadb-browser chromadb-browser
+```
 
-## Environment Configuration
+### 3. Environment Variables
 
-Create a `.env.production` file with the following variables:
+Create a `.env.production` file on your EC2 instance:
 
-```env
+```bash
 NODE_ENV=production
 NEXT_TELEMETRY_DISABLED=1
 PORT=3001
 HOSTNAME=0.0.0.0
-
-# ChromaDB Configuration
-CHROMA_SERVER_HOST=localhost
-CHROMA_SERVER_HTTP_PORT=8000
-CHROMA_SERVER_AUTHN_PROVIDER=
-CHROMA_SERVER_AUTHN_CREDENTIALS=
-CHROMA_AUTH_TOKEN_TRANSPORT_HEADER=
 ```
 
-## Security Configuration
+### 4. Nginx Configuration (Optional)
 
-1. **Configure Security Groups:**
-   - Allow inbound traffic on port 3001 from your IP
-   - Allow inbound traffic on port 8000 for ChromaDB (if running on same instance)
+If you want to use Nginx as a reverse proxy:
 
-2. **Set up SSL (Optional):**
-   - Use a reverse proxy like Nginx with SSL certificates
-   - Configure Let's Encrypt for free SSL certificates
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### 5. Systemd Service (Optional)
+
+Create `/etc/systemd/system/chromadb-browser.service`:
+
+```ini
+[Unit]
+Description=ChromaDB Browser
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/path/to/your/app
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=10
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then enable and start the service:
+
+```bash
+sudo systemctl enable chromadb-browser
+sudo systemctl start chromadb-browser
+```
 
 ## Troubleshooting
 
+### If you still see chunk loading errors:
+
+1. Clear browser cache completely
+2. Check that the application is running on the correct port
+3. Verify that all static files are being served correctly
+4. Check the browser's Network tab to see which files are failing to load
+
 ### Common Issues:
 
-1. **JavaScript chunks failing to load (400 errors):**
-   - Ensure `NODE_ENV=production` is set
-   - Check that the build was successful
-   - Verify the Next.js configuration
+- **Port conflicts**: Make sure port 3001 is not being used by another process
+- **Firewall**: Ensure your EC2 security group allows traffic on port 3001
+- **File permissions**: Make sure the application has proper read permissions
 
-2. **Application not starting:**
-   - Check if port 3001 is available
-   - Verify all environment variables are set
-   - Check application logs
+## Monitoring
 
-3. **ChromaDB connection issues:**
-   - Verify ChromaDB is running and accessible
-   - Check connection string and authentication settings
-   - Ensure network connectivity between services
-
-### Logs and Monitoring:
+To monitor your application:
 
 ```bash
-# Docker logs
-docker logs chromadb-browser
+# Check if the application is running
+ps aux | grep next
 
-# System logs
-journalctl -u your-service-name
-
-# Application logs
+# Check logs
 tail -f /var/log/chromadb-browser.log
+
+# Check port usage
+netstat -tlnp | grep 3001
 ```
-
-## Performance Optimization
-
-1. **Enable gzip compression**
-2. **Set up caching headers**
-3. **Use a CDN for static assets**
-4. **Monitor memory and CPU usage**
-
-## Backup and Recovery
-
-1. **Regular backups of ChromaDB data**
-2. **Application configuration backup**
-3. **Database backup scripts**
-
-## Scaling
-
-For high-traffic deployments:
-- Use a load balancer
-- Deploy multiple application instances
-- Use a managed database service
-- Implement caching strategies
