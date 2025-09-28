@@ -57,9 +57,9 @@ export function useGetCollections(config?: AppConfig) {
     },
     enabled: !!config?.connectionString,
     retry: false,
-    staleTime: 0, // Always consider data stale
-    gcTime: 1000, // Short cache time (1 second)
-    refetchOnMount: true, // Refetch when component mounts
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    refetchOnMount: false, // Don't refetch when component mounts if data is fresh
     refetchOnWindowFocus: false, // Don't refetch on window focus to prevent loops
   })
 }

@@ -43,6 +43,7 @@ export default function Sidebar({ currentCollection }: SidebarProps) {
     })
   }
 
+  // Simple navigation - no refresh needed when clicking collection items
   const handleCollectionClick = (collectionId: string) => {
     router.push(`/collections/${collectionId}`)
   }
