@@ -7,7 +7,9 @@
     "dev:debug": "NODE_OPTIONS='--inspect' next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "generate-mock-data": "node script/generate_mock_data.js"
+    "start:prod": "NODE_ENV=production next start -p 3001",
+    "generate-mock-data": "node script/generate_mock_data.js",
+    "deploy": "chmod +x deploy.sh && ./deploy.sh"
   },
   "dependencies": {
     "@mantine/core": "^7.9.0",
